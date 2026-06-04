@@ -1,0 +1,6 @@
+flask
+flask-sqlalchemy
+opencv-python
+face-recognition
+numpy
+google-generativeai
