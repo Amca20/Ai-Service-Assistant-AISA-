@@ -1,24 +1,24 @@
 # 🤖 AI Service Assistant (AISA) - Smart Biometric Kiosk
 
-An intelligent, multi-modal visitor management system engineered to automate conventional front-desk registration processes within academic institutions and administrative environments[cite: 4]. Developed under the Faculty of Artificial Intelligence and Cyber Security (FAIX), UTeM, AISA replaces traditional paper-based logbooks with a seamless, contactless, and voice-guided experience driven by computer vision and generative AI[cite: 4].
+An intelligent, multi-modal visitor management system engineered to automate conventional front-desk registration processes within academic institutions and administrative environments[cite: 4]. Developed under the Faculty of Artificial Intelligence and Cyber Security (FAIX), UTeM, AISA replaces traditional paper-based logbooks with a seamless, contactless, and voice-guided experience driven by computer vision and generative AI
 
 ---
 
 ## 📌 Project Overview & Objectives
 
-Traditional visitor logging suffers from administrative bottlenecks, legible handwriting issues, and lack of real-time tracking[cite: 4]. AISA addresses these security gaps and operational inefficiencies by merging automated facial verification with natural language intent extraction to provide zero-touch data entry[cite: 4].
+Traditional visitor logging suffers from administrative bottlenecks, legible handwriting issues, and lack of real-time tracking. AISA addresses these security gaps and operational inefficiencies by merging automated facial verification with natural language intent extraction to provide zero-touch data entry
 
 ### 🎯 Core Objectives:
-* **Voice-Based Registration:** Build an intuitive speech-to-text processing engine to log visit details hands-free[cite: 4].
-* **Biometric Face Tracking:** Deploy real-time face detection and recognition to securely audit and log visitor arrivals and departures[cite: 4].
-* **Centralized Administration:** Provide a comprehensive administrative web dashboard for real-time facility monitoring, visual trend analytics, and logs management[cite: 4].
-* **Instant Communication:** Automate staff notifications by immediately dispatching arrival details and visitor photos to the requested hosts[cite: 4].
+* **Voice-Based Registration:** Build an intuitive speech-to-text processing engine to log visit details hands-free.
+* **Biometric Face Tracking:** Deploy real-time face detection and recognition to securely audit and log visitor arrivals and departures.
+* **Centralized Administration:** Provide a comprehensive administrative web dashboard for real-time facility monitoring, visual trend analytics, and logs management.
+* **Instant Communication:** Automate staff notifications by immediately dispatching arrival details and visitor photos to the requested hosts.
 
 ---
 
 ## 🛠️ System Architecture & Workflow
 
-AISA is built on a robust three-tier client-server architecture designed for high throughput, low latency, and fluid modular interaction[cite: 4].
+AISA is built on a robust three-tier client-server architecture designed for high throughput, low latency, and fluid modular interaction.
 
 ```text
   [Visitor Kiosk Terminal] ──► [Flask Backend Orchestrator] ──► [Relational Database]
