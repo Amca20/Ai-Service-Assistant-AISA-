@@ -72,8 +72,6 @@ AISA is built on a robust three-tier client-server architecture designed for hig
  |
 | **Database & Mail** | SQLite, SQLAlchemy ORM, Flask-Mail | Secure storage for metrics and threaded SMTP delivery models.
 
- |
-
 ---
 
 ## 📊 Performance Analytics & Testing Results
