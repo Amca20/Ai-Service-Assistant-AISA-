@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Academic Visitor Kiosk</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; background: #2c3e50; color: white; }
+        .container { max-width: 900px; margin: 30px auto; background: #34495e; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        /* Camera Layout */
+        .camera-box { border: 5px solid #ecf0f1; border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; }
+        img { width: 100%; display: block; }
+        
+        /* Checklist Overlay */
+        .checklist {
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            margin: 20px auto;
+            width: 80%;
+            border-left: 5px solid #f1c40f;
+        }
+        .checklist h3 { margin: 0 0 10px 0; color: #f1c40f; }
+        .checklist ul { margin: 0; padding-left: 20px; }
+        .checklist li { margin-bottom: 5px; font-size: 18px; }
+
+        .controls { margin-top: 20px; }
+        .btn { 
+            background: #e74c3c; color: white; padding: 15px 40px; border: none; 
+            border-radius: 50px; font-size: 20px; cursor: pointer; transition: 0.3s; 
+            font-weight: bold; width: 250px;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn.recording { background: #f1c40f; color: #2c3e50; animation: pulse 1.5s infinite; }
+        .btn.processing { background: #3498db; color: white; animation: none; opacity: 0.7; cursor: not-allowed; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        #transcript-box { 
+            margin-top: 20px; padding: 10px; background: #2c3e50; 
+            border: 1px solid #7f8c8d; border-radius: 5px; min-height: 40px; color: #ecf0f1; font-style: italic;
+        }
+        #status { margin-top: 10px; font-weight: bold; color: #3498db; }
+        
+        .info-card { background: #27ae60; padding: 15px; border-radius: 8px; text-align: left; display: none; margin-top: 20px; color: white; }
+
+        /* PRIVACY DISCLAIMER STYLE */
+        .disclaimer { font-size: 12px; color: #bdc3c7; margin-top: 20px; border-top: 1px solid #7f8c8d; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Visitor Registration</h1>
+        
+        <div class="checklist">
+            <h3>📝 Please Say:</h3>
+            <ul>
+                <li>"Hello" (to start)</li>
+                <li>Your <strong>Name</strong></li>
+                <li>Your <strong>Matric Number</strong></li>
+                <li><strong>Who</strong> you want to see</li>
+                <li>The <strong>Reason</strong> for your visit</li>
+            </ul>
+        </div>
+
+        <div class="camera-box">
+            <img src="{{ url_for('video_feed') }}" alt="Live Camera Feed">
+        </div>
+
+        <div class="controls">
+            <button id="recordBtn" class="btn" onclick="manualToggle()">
+                Say "Hello" to Start
+            </button>
+        </div>
+
+        <div id="transcript-box">Listening for trigger word...</div>
+        <div id="status">Standby</div>
+
+        <div id="resultCard" class="info-card">
+            <h3>✅ Registered Successfully!</h3>
+            <p><strong>Name:</strong> <span id="resName"></span></p>
+            <p><strong>Matric:</strong> <span id="resMatric"></span></p>
+            <p><strong>Meeting:</strong> <span id="resHost"></span></p>
+            
+            <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 5px;">
+                <strong>Status:</strong> <br>
+                <span id="resStatus" style="font-size: 1.2em; color: #f1c40f;">Checking...</span>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            <p><strong>Privacy Notice:</strong> By using this system, you consent to the collection of your facial image and voice data for identification and academic registration purposes only. Data is stored securely within the AISA system.</p>
+        </div>
+
+    </div>
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+        let isActiveRecording = false; // "True" means we are recording the details
+        let finalTranscript = "";
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; 
+            recognition.interimResults = true; 
+            recognition.lang = 'en-US';
+
+            recognition.onstart = function() {
+                if (!isActiveRecording) {
+                    document.getElementById('status').innerText = "Standby (Say 'Hello')";
+                }
+            };
+
+            recognition.onend = function() {
+                recognition.start(); 
+            };
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let latestSentence = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        latestSentence = event.results[i][0].transcript.trim().toLowerCase();
+                        finalTranscript += event.results[i][0].transcript + " ";
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                // 1. STANDBY MODE: Look for "Hello"
+                if (!isActiveRecording) {
+                    document.getElementById('transcript-box').innerText = "Heard: " + (latestSentence || interimTranscript);
+                    
+                    if (interimTranscript.toLowerCase().includes("hello") || latestSentence.includes("hello")) {
+                        startActiveRecording();
+                    }
+                } 
+                // 2. ACTIVE RECORDING MODE: Capture details
+                else {
+                    document.getElementById('transcript-box').innerText = finalTranscript + interimTranscript;
+                }
+            };
+
+            recognition.start(); 
+        }
+
+        function startActiveRecording() {
+            isActiveRecording = true;
+            finalTranscript = ""; 
+            updateButton("Stop & Submit", "recording");
+            document.getElementById('status').innerText = "Listening... Speak now!";
+        }
+
+        function manualToggle() {
+            if (!isActiveRecording) {
+                startActiveRecording();
+            } else {
+                stopAndSubmit();
+            }
+        }
+
+        function stopAndSubmit() {
+            isActiveRecording = false;
+            updateButton("Processing...", "processing");
+            
+            setTimeout(() => {
+                let textToSend = document.getElementById('transcript-box').innerText;
+                sendTextToServer(textToSend);
+            }, 800);
+        }
+
+        function updateButton(text, className) {
+            const btn = document.getElementById('recordBtn');
+            btn.innerText = text;
+            btn.className = "btn " + className;
+        }
+
+        async function sendTextToServer(text) {
+            document.getElementById('status').innerText = "Sending to AI...";
+            
+            try {
+                const response = await fetch('/process_visit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: text })
+                });
+
+                const result = await response.json();
+                
+                updateButton("Say 'Hello' to Start", "");
+
+                if (result.status === "success") {
+                    // --- SUCCESS ---
+                    document.getElementById('status').innerText = "Done!";
+                    document.getElementById('resultCard').style.display = "block";
+                    document.getElementById('resName').innerText = result.data.name;
+                    document.getElementById('resMatric').innerText = result.data.matric_number;
+                    document.getElementById('resHost').innerText = result.data.host_name;
+                    document.getElementById('resStatus').innerText = result.data.room_message;
+                    
+                    // Color coding for UX
+                    const statusSpan = document.getElementById('resStatus');
+                    if (result.data.room_status === "available") {
+                        statusSpan.style.color = "#2ecc71"; // Green
+                    } else if (result.data.room_status === "busy") {
+                        statusSpan.style.color = "#e74c3c"; // Red
+                    } else {
+                        statusSpan.style.color = "#f1c40f"; // Yellow
+                    }
+                    
+                    setTimeout(() => {
+                        document.getElementById('resultCard').style.display = "none";
+                        document.getElementById('status').innerText = "Standby";
+                        finalTranscript = ""; 
+                    }, 8000); 
+
+                } else if (result.status === "validation_error") {
+                    // --- VALIDATION ERROR (MISSING FIELDS) ---
+                    document.getElementById('status').innerText = "❌ Missing Info: " + result.message;
+                    document.getElementById('status').style.color = "#e74c3c"; // Red Color
+                    
+                    finalTranscript = ""; // Reset buffer
+
+                    setTimeout(() => {
+                        document.getElementById('status').innerText = "Standby (Try Again)";
+                        document.getElementById('status').style.color = "#3498db"; // Back to Blue
+                    }, 5000);
+
+                } else {
+                    // --- GENERIC ERROR ---
+                    document.getElementById('status').innerText = "Error: " + result.message;
+                }
+
+            } catch (error) {
+                console.error(error);
+                updateButton("Say 'Hello' to Start", "");
+                document.getElementById('status').innerText = "Server Error";
+            }
+        }
+    </script>
+</body>
+</html>
