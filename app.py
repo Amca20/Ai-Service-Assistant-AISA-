@@ -23,7 +23,7 @@ from utils import find_lecturer_by_fuzzy_name
 # ==========================================
 # CONFIGURATION
 # ==========================================
-API_KEY = "AIzaSyCuK97tczg5RPo3PIerbv3CPGNxEd7tqUo"
+API_KEY = "Put API_KEY here"
 client = genai.Client(api_key=API_KEY)
 
 app = Flask(__name__)
