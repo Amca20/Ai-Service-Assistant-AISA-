@@ -128,8 +128,3 @@ This intelligent system was engineered as a final Workshop 2 project for the SEM
 
 
 * `static/captures/` — Directory mapping timestamped visitor image assets for email notification logs.
-
-
-
-```
-
